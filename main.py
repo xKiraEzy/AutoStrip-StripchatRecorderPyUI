@@ -4,7 +4,7 @@ import threading
 import time
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QLabel, QFileDialog
 import configparser
 import StripchatRecorder
 from StripchatRecorder import startRecording
@@ -18,6 +18,7 @@ class StripchatUI(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("StripchatRecorder")
+        self.selectedFiles = []
         self.setMinimumSize(800, 500)
         self.runProg = True
         # Create tabs
@@ -127,7 +128,7 @@ class StripchatUI(QtWidgets.QMainWindow):
         self.recordingScrollArea.setWidget(self.streamerDisplayWidget)
         self.recordingScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.recordingScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.recordingScrollArea.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        # self.recordingScrollArea.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.recordingScrollArea.setWidgetResizable(True)
         self.recordingScrollArea.setStyleSheet("QWidget {border: 1px solid gray; border-radius: 5px;}")
         # Add Bordered Textbox to Right Panel
@@ -137,6 +138,63 @@ class StripchatUI(QtWidgets.QMainWindow):
         # Add Left and Right Panel to Tab 1
         self.tab1Layout.addLayout(self.leftPanel, 1)
         self.tab1Layout.addLayout(self.rightPanel, 1)
+
+        self.fixVideoTabWidget = QtWidgets.QWidget()
+        self.fixVideoTabLayout = QtWidgets.QHBoxLayout()
+        self.fixVideoTabWidget.setLayout(self.fixVideoTabLayout)
+
+        self.addFileBtn = QtWidgets.QPushButton("Select Files")
+        # self.btn.clicked.connect(self.getfile)
+
+        self.flineEditsWidget = QtWidgets.QWidget()
+        self.flineEditsVbox = QtWidgets.QVBoxLayout()
+        self.flineEditsVbox.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.flineEditsWidget.setLayout(self.flineEditsVbox)
+        self.flineEditsScrollArea = QtWidgets.QScrollArea()
+        self.flineEditsScrollArea.setWidget(self.flineEditsWidget)
+        self.flineEditsScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.flineEditsScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.flineEditsScrollArea.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.flineEditsScrollArea.setWidgetResizable(True)
+        self.flineEditsScrollArea.setStyleSheet("QWidget {border: 1px solid gray; border-radius: 5px;}")
+
+        self.fAddButton = QtWidgets.QPushButton("Select Video")
+        self.fAddButton.clicked.connect(self.getfiles)
+
+        self.fClearButton = QtWidgets.QPushButton("Clear Selection")
+        self.fClearButton.clicked.connect(self.clearSelection)
+
+        self.fRunButton = QtWidgets.QPushButton("Start Fix")
+        self.fRunButton.clicked.connect(self.startFix)
+
+        self.fixVideoButtonWidget1 = QtWidgets.QWidget()
+        self.fixVideoButtonLayout1 = QtWidgets.QHBoxLayout()
+        self.fixVideoButtonWidget1.setLayout(self.fixVideoButtonLayout1)
+        self.fixVideoButtonLayout1.addWidget(self.fAddButton)
+        self.fixVideoButtonLayout1.addWidget(self.fClearButton)
+
+        self.fixVideoButtonWidget2 = QtWidgets.QWidget()
+        self.fixVideoButtonLayout2 = QtWidgets.QHBoxLayout()
+        self.fixVideoButtonWidget2.setLayout(self.fixVideoButtonLayout2)
+        self.fixVideoButtonLayout2.addWidget(self.fRunButton)
+
+        self.PPLeftPanelWidget = QtWidgets.QWidget()
+        self.PPLeftPanelLayout = QtWidgets.QVBoxLayout()
+        self.PPLeftPanelLayout.addWidget(self.flineEditsScrollArea)
+        self.PPLeftPanelLayout.addWidget(self.fixVideoButtonWidget1)
+        self.PPLeftPanelLayout.addWidget(self.fixVideoButtonWidget2)
+        # self.PPLeftPanelWidget.setStyleSheet("background-color: yellow")
+        self.PPLeftPanelWidget.setLayout(self.PPLeftPanelLayout)
+
+        self.PPRightPanelWidget = QtWidgets.QWidget()
+        self.PPRightPanelLayout = QtWidgets.QVBoxLayout()
+        # self.PPRightPanelWidget.setStyleSheet("background-color: red")
+        self.PPRightPanelWidget.setLayout(self.PPRightPanelLayout)
+
+
+        self.fixVideoTabLayout.addWidget(self.PPLeftPanelWidget, 1)
+        self.fixVideoTabLayout.addWidget(self.PPRightPanelWidget, 1)
+
 
         self.tabSetting = QtWidgets.QWidget()
         self.tabSettingLayout = QtWidgets.QVBoxLayout()
@@ -159,6 +217,7 @@ class StripchatUI(QtWidgets.QMainWindow):
         self.tabSettingLayout.addLayout(self.settingActionRow)
         # Add Tab 1 to the tabs
         self.tabs.addTab(self.tab1, "Recording")
+        self.tabs.addTab(self.fixVideoTabWidget, "Fix Videos")
         self.tabs.addTab(self.tabSetting, "Setting")
 
 
@@ -179,6 +238,15 @@ class StripchatUI(QtWidgets.QMainWindow):
         newLineEdit = QtWidgets.QLineEdit()
         self.lineEdits.append(newLineEdit)
         self.lineEditsVbox.addWidget(newLineEdit)
+        # for wid in self.lineEdits:
+        #     wid.setStyleSheet("background-color: yellow")
+
+    def addSelectedFile(self, filename):
+        # Add a new QLineEdit widget to the list and layout
+        newLineEdit = QtWidgets.QLineEdit()
+        newLineEdit.setText(filename)
+        self.selectedFiles.append(filename)
+        self.fixSelectedFileListLayout.addWidget(newLineEdit)
         # for wid in self.lineEdits:
         #     wid.setStyleSheet("background-color: yellow")
 
@@ -210,6 +278,62 @@ class StripchatUI(QtWidgets.QMainWindow):
         self.runProg = True
         self.recThread.start()
 
+    def getfiles(self):
+        dlg = QFileDialog()
+        dlg.setFileMode(QFileDialog.FileMode.ExistingFiles)
+        dlg.setMimeTypeFilters(
+            {
+                "video/mp4"
+            }
+        )
+        filenames = []
+
+        if dlg.exec_():
+            filenames = dlg.selectedFiles()
+            for file in filenames:
+                if file not in self.selectedFiles:
+                    self.selectedFiles.append(file)
+
+            for i in reversed(range(self.flineEditsVbox.count())):
+                self.flineEditsVbox.itemAt(i).widget().setParent(None)
+            for filename in self.selectedFiles:
+                label = QLabel(filename)
+                label.setAlignment(QtCore.Qt.AlignTop)
+                delButton = QtWidgets.QPushButton("Remove")
+                delButton.clicked.connect(self.addLineEdit)
+                selectedFileItemWidget = QtWidgets.QWidget()
+                selectedFileItemLayout = QtWidgets.QHBoxLayout()
+                selectedFileItemLayout.addWidget(label)
+                selectedFileItemLayout.addWidget(delButton)
+                selectedFileItemWidget.setLayout(selectedFileItemLayout)
+                # selectedFileItemWidget.setStyleSheet("background-color: yellow")
+
+                newLineEdit = QtWidgets.QLineEdit()
+                newLineEdit.setText(filename)
+                newLineEdit.setEnabled(False)
+                self.flineEditsVbox.addWidget(newLineEdit)
+
+                #self.fixSelectedFileListLayout.addWidget(selectedFileItemWidget)
+                print(filename)
+
+                # newLineEdit = QtWidgets.QLineEdit()
+                # self.lineEdits.append(newLineEdit)
+                # self.lineEditsVbox.addWidget(newLineEdit)
+    def startFix(self):
+       print("Start Fixing")
+       for file in self.selectedFiles:
+           print("START REPAIR THREAD")
+
+           def target():
+               Utils.repair_mp4_file_ffmpeg(file)
+
+           # output_file = Utils.repair_mp4_file_ffmpeg(file)
+           thread = threading.Thread(target=target)
+           thread.daemon = True
+           thread.start()
+    def clearSelection(self):
+        print("Clear Selection")
+        self.selectedFiles.clear()
     def stopRecording(self):
         print("STOP")
         StripchatRecorder.stopRecording()

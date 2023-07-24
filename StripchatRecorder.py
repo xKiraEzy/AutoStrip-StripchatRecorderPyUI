@@ -150,7 +150,7 @@ class Modelo(threading.Thread):
                 if {'isCamAvailable', 'streamName', 'viewServers'} <= resp['cam'].keys():
                     if 'flashphoner-hls' in resp['cam']['viewServers'].keys():
                         hls_url = f'https://b-{resp["cam"]["viewServers"]["flashphoner-hls"]}.doppiocdn.com/hls/{resp["cam"]["streamName"]}/{resp["cam"]["streamName"]}.m3u8'
-                        #print(hls_url)
+                        print(hls_url)
             if len(hls_url):
                 return hls_url
             else:
