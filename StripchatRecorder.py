@@ -18,7 +18,7 @@ if os.name == 'nt':
     kernel32 = ctypes.windll.kernel32
     kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
 
-mainDir = sys.path[0]
+# mainDir = sys.path[0]
 Config = configparser.ConfigParser()
 setting = {}
 # processingQueue = queue.Queue()
@@ -34,7 +34,12 @@ def cls():
 
 def readConfig():
     global setting
-
+    if getattr(sys, 'frozen', False):
+        # Running as an executable (pyinstaller-generated)
+        mainDir = os.path.dirname(sys.executable)
+    else:
+        # Running in an IDE or as a script
+        mainDir = os.path.dirname(os.path.realpath(sys.argv[0]))
     Config.read(mainDir + '/config.conf')
     setting = {
         'save_directory': Config.get('paths', 'save_directory'),
@@ -87,10 +92,13 @@ class Modelo(threading.Thread):
             try:
                 if self.start_time is None:
                     self.start_time = time.time()
+                print(self.start_time, isOnline)
                 session = streamlink.Streamlink()
                 streams = session.streams(f'hlsvariant://{isOnline}')
+                print("Model: " + self.modelo + " is online")
                 stream = streams['best']
                 fd = stream.open()
+
                 if not isModelInListofObjects(self.modelo, recording):
                     os.makedirs(os.path.join(setting['save_directory'], self.modelo), exist_ok=True)
                     with open(self.file, 'wb') as f:

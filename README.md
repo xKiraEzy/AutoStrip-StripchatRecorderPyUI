@@ -12,7 +12,7 @@ To install AutoStrip, follow these steps:
 
 1. Download the latest release .zip file from the [Releases](link-to-releases) page.
 2. Unzip the downloaded file to your desired location.
-3. Run the `main.exe` file to start the program.
+3. Run the `run.sh` file to start the program.
 
 That's it! AutoStrip is now installed and ready to use.
 
