@@ -1,16 +1,16 @@
-# AutoStr
+# AutoStrip
 
-AutoStr is a Python program used to automatically record and monitor streamers on SC. It provides details about the current session information of the monitored streamer.
+AutoStrip is a Python program used to automatically record and monitor streamers on stripchat.com. It provides details about the current session information of the monitored streamer.
 
 ## Installation
 
-To install AutoStr, follow these steps:
+To install AutoStrip, follow these steps:
 
 1. Download the latest release .zip file from the [Releases](link-to-releases) page.
 2. Unzip the downloaded file to your desired location.
 3. Run the `run.sh` file to start the program.
 
-That's it! AutoStr is now installed and ready to use.
+That's it! AutoStrip is now installed and ready to use.
 
 ## Usage
 
@@ -18,7 +18,7 @@ AutoStrip automatically records and monitors streamers on stripchat.com. It prov
 
 ## Configuration
 
-Before using AutoStr, make sure to configure it properly. Open the `config.conf` file in a text editor and set the following parameters:
+Before using AutoStrip, make sure to configure it properly. Open the `config.conf` file in a text editor and set the following parameters:
 
 - `save_directory`: The directory where recorded videos will be saved.
 - `wishlist`: The path to the file containing a list of streamers to monitor.
